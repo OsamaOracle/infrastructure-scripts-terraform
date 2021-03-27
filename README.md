@@ -20,7 +20,7 @@ At the moment, running Terraform is a manual task, eventually it might be added 
 - `tfenv` - easy way to manage terraform client versions
 - access to AWS
 
-For your convenience you can use the terraform-runner Docker image from https://gitlab.com/osamaoracle/devops/terraform-runner
+For your convenience you can use the terraform-runner Docker image from https://github.com/OsamaOracle/infrastructure-scripts-terraform
 which contains all of the above dependencies. 
 
 
