@@ -1,0 +1,73 @@
+include:
+- project: osamaoracle/devops/gitlab-ci-templates
+  file: gitlab-ci-templates.yml
+
+stages:
+- init
+- plan
+- execute
+- provision
+
+variables:
+  PROJECT: ""
+  ENV: ""
+  ACTION: ""
+
+terraform-init:
+  stage: init
+  tags:
+  - osamaoracle
+  image: docker.osamaoracle.com/internal/terraform
+  before_script:
+    - cd projects/${PROJECT}
+  script:
+  - terraform init -input=false -backend-config="key=infra/${PROJECT}/${ENV}/tfstate" || true
+  artifacts:
+    paths:
+    - projects/${PROJECT}/.terraform
+  except:
+    variables:
+      - $ACTION == ""
+
+terraform-plan:
+  stage: plan
+  tags:
+  - osamaoracle
+  image: docker.osamaoracle.com/internal/terraform
+  before_script:
+    - cd projects/${PROJECT}
+  script:
+  - terraform plan -var "project=${PROJECT}" -var "env=${ENV}" -input=false -out plan
+  artifacts:
+    paths:
+    - projects/${PROJECT}/plan
+  only:
+    variables:
+      - $ACTION == "apply" || $ACTION == "plan"
+
+terraform-apply-plan:
+  stage: execute
+  tags:
+  - osamaoracle
+  image: docker.osamaoracle.com/internal/terraform
+  before_script:
+    - cd projects/${PROJECT}
+  script:
+  - terraform apply ./plan
+  only:
+    variables:
+      - $ACTION == "apply"
+
+terraform-destroy:
+  stage: execute
+  tags:
+  - osamaoracle
+  image: docker.osamaoracle.com/internal/terraform
+  before_script:
+    - cd projects/${PROJECT}
+  script:
+  - terraform destroy -var "project=${PROJECT}" -var "env=${ENV}" -input=false -auto-approve
+  only:
+    variables:
+      - $ACTION == "destroy"
+      - $DESTROY_ENV == $ENV

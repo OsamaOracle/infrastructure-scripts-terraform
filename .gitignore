@@ -1,0 +1,6 @@
+*.iml
+.idea
+.terraform
+init.vars
+.terraform.lock.hcl
+*.terragrunt-generated.*
